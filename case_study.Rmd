@@ -1,0 +1,90 @@
+---
+title: "Case Study"
+output: github_document
+---
+```{r}
+library(tidyverse)
+library(p8105.datasets)
+library(leaflet)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = 0.6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+## all plots i make will have the viridis color palette
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+```
+
+### Load data
+```{r}
+data("nyc_airbnb")
+str(nyc_airbnb)
+
+## select a random set of rows in the dataframe
+nyc_airbnb %>% 
+  sample_n(1000)
+```
+
+### Brainstorming questions
+
+* What is the best Airbnb in staten island for <$100?
+* What price range is popular in each borough? Most rented?
+* What apartment features are related to price?
+* Cheapest room type in each neighborhood?
+* Hosts have higher ratings?
+
+* Average price of room type by borough
+
+```{r}
+nyc_airbnb %>% 
+  group_by(neighbourhood_group, room_type) %>% 
+  summarize(
+    avg_price = mean(price, na.rm = TRUE)
+  ) %>% 
+  ggplot(aes(x = room_type, y = avg_price, color = neighbourhood_group)) +
+geom_point(aes(size = avg_price)) +
+  labs(
+    title = "Average Price of room type by Borough",
+    x = "Room Type",
+    y = "Average Price"
+  )
+```
+
+* Price of airbnb by neighborhood
+```{r}
+nyc_airbnb %>% 
+  filter(neighbourhood_group == "Manhattan") %>% 
+  count(neighbourhood)
+
+nyc_airbnb %>% 
+  filter(price < 1000,
+         neighbourhood_group == "Manhattan") %>% 
+  ggplot(aes(x = neighbourhood, y = price)) +
+  geom_boxplot() +
+  coord_flip()
+```
+
+Interactive visualization!!!
+leaflet for mapping in r package
+```{r}
+#code didnt work 
+#pal <- colorNumeric("viridis", nyc_airbnb %>% pull(stars))
+
+nyc_airbnb %>% 
+  sample_n(5000) %>% 
+  leaflet() %>% 
+  addProviderTiles(providers$CartoDB.Positron) %>% 
+  addCircleMarkers(~lat, ~long, radius = 1)
+```
+
